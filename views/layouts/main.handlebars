@@ -1,5 +1,6 @@
 <head>
-  <title>Certificates App</title>
+  <title>HearthStone Cards App</title>
+  <link rel="icon" href="../images/favicon.ico">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
@@ -10,19 +11,19 @@
   <style>
     #userNameID{
       margin-right: 20px!important;
-      background-color: #ffffffff!important;
-      color: #72c02c!important;
+      background-color: #642578!important;
+      color: white!important;
     }
     nav.navbar {
-    background-color: #72c02c!important;
+    background-color: #f1f1f1!important;
     }
 
     .navbar-dark .navbar-nav .nav-link {
-      color: white!important;
+      color: #642578!important;
     }
   </style>
 </head>
-  <body style="background-color: white">
+  <body style="background-color: #996fa6">
   <script>
     var logout = new AutoLogout();
     var self = this;
@@ -70,26 +71,25 @@
   <nav class="navbar navbar-expand-sm bg-success navbar-dark">
 
     <a class="navbar-brand" href="/">
-      <img src="../images/aa-logo.png" style="width:150px;">
+      <img src="../images/hi-logo.png" style="width:100px;">
     </a>
 
     <ul class="navbar-nav" id="ulItems">
-      <li class="nav-item dropdown" id="liStudent">
+      <li class="nav-item dropdown" id="liCards">
         <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
-          Students
+          Cards
         </a>
         <div class="dropdown-menu">
-          <a class="dropdown-item" href="createStudent">Create</a>
-          <a class="dropdown-item" href="students">List</a>
+          <a class="dropdown-item" href="cards">List</a>
         </div>
       </li>
-      <li class="nav-item dropdown" id="liCertificate">
+      <li class="nav-item dropdown" id="liDecks">
         <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
-          Certificates
+          Decks
         </a>
         <div class="dropdown-menu">
-          <a class="dropdown-item" href="createCertificate">Create/Upload</a>
-          <a class="dropdown-item" href="certificates">List/Generate</a>
+          <a class="dropdown-item" href="createDeck">Create</a>
+          <a class="dropdown-item" href="decks">List</a>
         </div>
       </li>
       <li class="nav-item dropdown" id="liUsers">
@@ -100,6 +100,13 @@
           <a class="dropdown-item" href="createUser">Create</a>
           <a class="dropdown-item" href="users">List</a>
         </div>
+      </li>
+      <li>
+        <div class="">
+      <a class="navbar-brand" href="/" >
+          <img src="../images/HearthStone-logo.png" style="width:200px;">
+        </a>
+    </div>
       </li>
     </ul>
     <div class="ml-auto mr-1">
