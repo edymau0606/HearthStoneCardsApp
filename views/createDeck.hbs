@@ -1,0 +1,224 @@
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+  <style type="text/css">
+    #createDeckButton {
+            background-color: #642578!important
+        }
+  </style>
+</head>
+
+<body>
+<div class="bodyForm" id="containerForm">
+    <div class="container">
+        <h2 align="center" id="title">Register Deck</h2>
+    </div>
+
+    <div class="container" id="divDeckName">
+        <label class="control-label col-sm-2" for="deckNameT">Name:</label>
+        <div class="col-sm-10">
+          <input type="text"  class="form-control" onkeypress="return /^[a-zA-ZñÑ ´]+$/.test(event.key)" id="deckNameT" placeholder="Enter Deck Name" name="deck">
+          <input type="text" id="flag" name="flag" value="create" hidden>
+          <label class="control-label" id="deckNameError" hidden></label>
+        </div>
+    </div>
+
+    <div id="divBlankRow">
+        </br>
+    </div>
+
+    <div class="container" id="divCardClass">
+        <label class="control-label col-sm-2" for="cardClass">Card Class:</label>
+        <select class="form-control" id="cardClass">
+        </select>
+    </div>
+
+    <div id="divBlankRow2">
+        </br>
+    </div>
+
+    <div class="container" style="border: 1px solid grey;border-radius: 10px;">
+        <h5>Card Format:</h5>
+        <div class="radio-inline">
+          <label><input type="radio" name="cardFormatRadio" id="standard" value="standard" checked>Standard</label>
+        </div>
+        <div class="radio-inline">
+          <label><input type="radio" name="cardFormatRadio" id="wild" value="wild">Wild</label>
+        </div>
+    </div>
+
+    <div id="divBlankRow3">
+        </br>
+    </div>
+
+    <div class="container">
+        <button type="submit" id="createDeckButton" class="btn btn-success btn-lg pull-right" onclick="validate()">Next</button>
+    </div>
+</div>
+<script>
+
+$(document).ready( () => {
+    $.ajax({
+    type: "GET",
+    url: "https://omgvamp-hearthstone-v1.p.rapidapi.com/info",
+    headers: {
+            "x-rapidapi-key": "d7c5debc8fmshb4e12dcf0d3f399p17673fjsnf5cc71954220",
+            "x-rapidapi-host": "omgvamp-hearthstone-v1.p.rapidapi.com"
+        },
+    dataType: "json",
+        success: function (data) {
+        var dataValue = data.classes;
+        var serverResponse = dataValue;
+            contentType: "application/json";
+        $.each(serverResponse, function (i, serverResponse) {
+            $("#cardClass").append("<option value='" + serverResponse + "'>" + serverResponse + "</option>")
+        })
+        }
+    })
+});
+ 
+
+
+
+    /*var changePasswordFlag = 0;
+var URL = (window.location.search).substring(1);
+var flag = getQueryVariable("flag");
+var studentName = getQueryVariable("name")
+var studentLastName = getQueryVariable("lastName")
+var career = unescape(getQueryVariable("career"))
+var age = getQueryVariable("age")
+var submitButton = document.getElementById("createStudentButton")
+*/
+/*if(flag=="edit"){
+  var title = document.getElementById("title")
+  var studentNameText = document.getElementById("studentNameT")
+  var studentLastNameText = document.getElementById("studentLastNameT")
+  var careerText = document.getElementById("career")
+  var ageText = document.getElementById("age")
+  studentNameText.value = studentName
+  studentLastNameText.value = studentLastName
+  careerText.value = career
+  ageText.value = age
+  title.innerHTML = "Edit Student: "+studentName
+  submitButton.innerHTML = "Update"
+}*/
+
+/*var deckNames = []
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": window.location.origin + "/getDecks",
+  "method": "GET",
+  "headers": {
+    "cache-control": "no-cache",
+  }
+}*/
+
+/*$.ajax(settings).done(function (response) {
+  var decks = (JSON.parse(response)).data
+  for (let i = 0; i < decks.length; i++) {
+    var deckName = (decks[i].name).trim();
+    deckNames.push(deckName);
+  }
+});*/
+
+function validate() {
+  $("#createDeckButton").attr("disabled", true);
+  var deckName = document.getElementById("deckNameT");
+  var deckNameError = document.getElementById("deckNameError");
+  var divDeckName = document.getElementById("divDeckName");
+
+  if (deckName.value == "") {
+    cleanErrors();
+    deckNameError.innerHTML = "Insert a Deck Name"
+    deckNameError.hidden = false;
+    divDeckName.setAttribute("class", "container has-error has-feedback")
+    $("#createDeckButton").attr("disabled", false);
+    return false;
+  }/*else if (deckNames.includes(deckName.value)&&flag==false) {
+      cleanErrors();
+    deckNameError.innerHTML = "Deck Name Already Exists"
+    deckNameError.hidden = false;
+    divDeckName.setAttribute("class", "container has-error has-feedback")
+    $("#createDeckButton").attr("disabled", false);
+    return false;
+  }*/ 
+  else {
+    cleanErrors();
+    if(flag=="edit"){
+      //updateDeck();
+    } else{
+      insertDeck();
+    }
+    return true;
+  }
+}
+
+function cleanErrors(){
+      deckNameError.hidden = true;
+      var divDeckName = document.getElementById("divDeckName");
+      divDeckName.setAttribute("class", "container")
+}
+
+function insertDeck() {
+  var deckName = document.getElementById("deckNameT").value;
+  var cardClass = document.getElementById("cardClass").value;
+  var cardFormat = "";
+  if (document.getElementById("standard").checked) {
+          cardFormat = "Standard"
+        } else {
+          cardFormat = "Wild"
+        }
+
+  location.href = window.location.origin + "/fillDeck?deckName="+ deckName + "&cardClass=" + cardClass + "&cardFormat=" + cardFormat
+
+}
+
+/*function updateStudent() {
+  var studentName = document.getElementById("studentNameT").value;
+  var studentLastName = document.getElementById("studentLastNameT").value;
+  var career = document.getElementById("career").value;
+  var age = document.getElementById("age").value;
+
+  var data = JSON.stringify({
+    "name": studentName,
+    "lastName": studentLastName,
+    "career": career,
+    "age": age
+  });
+
+  var xhr = new XMLHttpRequest();
+  xhr.withCredentials = true;
+
+  xhr.addEventListener("readystatechange", function () {
+    if (this.readyState === 4) {
+      location.href = window.location.origin + "/students"
+    }
+  });
+
+  var fullName = getQueryVariable("name")+"-"+getQueryVariable("lastName")
+
+  xhr.open("PUT", window.location.origin + "/students/"+fullName);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.setRequestHeader("cache-control", "no-cache");
+
+  xhr.send(data);
+  
+}*/
+
+function getQueryVariable(variable) {
+      var query = URL;
+      var vars = query.split("&");
+      for (var i = 0; i < vars.length; i++) {
+          var pair = vars[i].split("=");
+          if (pair[0] == variable) {
+              return pair[1];
+          }
+      }
+      return false;
+  }
+</script>
+</body>

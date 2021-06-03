@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jexcel/2.1.0/js/jquery.jexcel.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jexcel/2.1.0/js/jquery.jdropdown.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jexcel/2.1.0/css/jquery.jexcel.min.css" type="text/css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jexcel/2.1.0/css/jquery.jdropdown.min.css" type="text/css" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<script src="../javascripts/papaparse.js"></script>
+<style>
+    .jdropdown-content{
+        width: 180px;
+        position: relative;
+    }
+
+    .modal-open {
+      overflow: hidden;
+      padding-right: 0 !important;
+    }
+
+  .card {
+  display: flex;
+  height: 280px;
+  width: 200px;
+  background-color: #17141d;
+  border-radius: 10px;
+  box-shadow: -1rem 0 3rem #000;
+  transition: 0.4s ease-out;
+  position: relative;
+  left: 0px;
+}
+
+.card:not(:first-child) {
+    margin-left: -0px;
+}
+
+.card:hover {
+  transform: translateY(-20px);
+  transition: 0.4s ease-out;
+}
+
+.card:hover ~ .card {
+  position: relative;
+  left: 50px;
+  transition: 0.4s ease-out;
+}
+
+#deckResume{
+    position: fixed;
+    right: 0;
+    top: 50;
+}
+
+#cardsContainer{
+    background: black;
+    color: white;
+}
+
+</style>
+</head>
+
+<body>
+    <h1>Cards</h1>
+    <div>
+        <div class="row">
+            <div class="col-md-9">
+                <div class="container" id="cardsContainer">
+                    <div class="row" id="rowID">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3" id="deckResume">
+                    <h3>Deck:</h3>
+                    <center><label id="countCards">0</label><label>/30</label></center>
+                    <div class="def">
+                        <table id="mt" class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Card Name</th>
+                                    <th>Count</th>
+                                    <th>Options</th>
+                                    <th style="display:none;">Card ID</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableDeckCards">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-right">
+                        <button type="submit" class="btn btn-primary btn-lg" onclick="getHeaders()" hidden>Create</button>
+                    </div>
+            </div>
+        </div>
+    </div>
+  <div class="modal" id="cardInfoModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+              class="sr-only">Close</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="row-fluid">
+            <div class="panel-group" id="accordion">
+              <div class="panel panel-primary">
+                <div class="panel-heading">
+                <center>
+                  <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" id="titleCardInfo">
+                    </a>
+                  </h4>
+                  </center>
+                </div>
+                <div id="collapseOne" class="panel-collapse collapse in">
+                    <center><img id="imgCardInfo" width="120" height="200"/></center>
+                  <div class="panel-body">
+                    <div class="row-fluid">
+                      <div class="container">
+                        <div class="col-md-4">
+                            <h6 id="cardIDValue" hidden></h6>
+                            <h6 id="cardRarityValue" hidden></h6>
+                          <center><h6 id="flavor"></h6></center>
+                          <center><h5 id="text"></h5></center>
+                          <div id="additionalInfo"></div>
+                        </div>
+                      </div><br /><br />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="cleanArrays()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="addCardToDeck(this)" data-dismiss="modal">Add Card</button>
+          </div>
+        </div>
+
+    </div>
+  </div>
+</div>
+ </body>
+    <script>
+    var countCards = parseInt(document.getElementById("countCards").innerHTML);
+    //document.getElementById("countCards").innerHTML = countCards
+    var cardNames = []
+    var cardNamesDuplicated = []
+    var cards = []
+    var URL = (window.location.search).substring(1);
+    var cardFormat = getQueryVariable("cardFormat");
+    var cardClass = unescape(getQueryVariable("cardClass"));
+    var cardSet = [];
+
+    $(document).ready(() => {
+        getCardSets()
+        .then((resolve) => {
+            $.ajax({
+                type: "GET",
+                url: "https://omgvamp-hearthstone-v1.p.rapidapi.com/cards/classes/" + cardClass,
+                headers: {
+                    "x-rapidapi-key": "d7c5debc8fmshb4e12dcf0d3f399p17673fjsnf5cc71954220",
+                    "x-rapidapi-host": "omgvamp-hearthstone-v1.p.rapidapi.com"
+                },
+                dataType: "json",
+                success: function (data) {
+                    contentType: "application/json";
+                    $.each(data, function (i, data) {
+                        if((cardSet).includes(data.cardSet)){
+                            let image = "";
+                            if(data.img==undefined) {
+                                image = "../images/no-image.png"
+                            } else {
+                                image = data.img
+                            }
+                            $("#rowID").append('<div class="col-md-3"><center><h4>' + data.name + '</h4><div class="card"><img onclick="getCardInfo(this)" data-toggle="modal" data-target="#cardInfoModal" src="' +image+'" name="' + data.name+ "-_-" + data.rarity + "-_-" + data.flavor + "-_-" + data.text + "-_-" + data.type + "-_-" + data.cardSet + "-_-" + data.cost + "-_-" + data.attack + "-_-" + data.health + "-_-" + data.artist +'" id="' + data.dbfId + "-_-" + data.img + '"/></div><center></div>')
+                        } 
+                    })
+                }
+            })
+        })
+        .catch((reject) => {
+            console.log(reject)
+        });
+    });
+
+    function getCardSets() {
+        return new Promise(function(resolve, reject) {
+            $.ajax({
+            type: "GET",
+            url: "https://omgvamp-hearthstone-v1.p.rapidapi.com/info",
+            headers: {
+                "x-rapidapi-key": "d7c5debc8fmshb4e12dcf0d3f399p17673fjsnf5cc71954220",
+                "x-rapidapi-host": "omgvamp-hearthstone-v1.p.rapidapi.com"
+            },
+            dataType: "json",
+            success: function (data, textStatus, request) {
+                var dataValue = "";
+                if(cardFormat== "Standard"){
+                    dataValue = data.standard;
+                } else {
+                    dataValue = data.wild;
+                }
+                var serverResponse = dataValue;
+                contentType: "application/json";
+                $.each(serverResponse, function (i, serverResponse) {
+                    cardSet.push(serverResponse) 
+                })
+                resolve(textStatus)   
+            },
+            error: function (request, textStatus, errorThrown){
+                reject(errorThrown)
+            } 
+            })
+        })
+    }
+        function getQueryVariable(variable) {
+            var query = URL;
+            var vars = query.split("&");
+            for (var i = 0; i < vars.length; i++) {
+                var pair = vars[i].split("=");
+                if (pair[0] == variable) {
+                    return pair[1];
+                }
+            }
+            return false;
+        }
+
+        function getCardInfo(card){
+         var divAdditionalInfo = $("#additionalInfo");  
+         var cardIDValue = document.getElementById("cardIDValue")
+         var cardRarityValue = document.getElementById("cardRarityValue")
+         var additionalInfoDiv = document.getElementById("additionalInfo")
+         var flavorValue = document.getElementById("flavor")
+         var textValue = document.getElementById("text")
+
+         additionalInfoDiv.innerHTML = "";
+         cardIDValue.innerHTML = "";
+         cardRarityValue.innerHTML = "";
+         flavorValue.innerHTML = "";
+         textValue.innerHTML = "";
+
+         var id = (card.id.split("-_-"))[0];
+         var img = (card.id.split("-_-"))[1];
+         var image = "";
+         if(img == "undefined") {
+           image = "../images/no-image.png"
+         } else {
+           image = img
+         }
+         var name = (card.name.split("-_-"))[0];
+         var rarity = (card.name.split("-_-"))[1];
+         console.log(rarity)
+         var flavorValue = (card.name.split("-_-"))[2];
+         var textValue = (card.name.split("-_-"))[3];
+         var type = (card.name.split("-_-"))[4];
+         var set = (card.name.split("-_-"))[5];
+         var cost = (card.name.split("-_-"))[6];
+         var attack = (card.name.split("-_-"))[7];
+         var health = (card.name.split("-_-"))[8];
+         var artist = (card.name.split("-_-"))[9];
+
+         var flavor = "";
+         var text = "";
+
+         if(flavorValue == "undefined") {
+           flavor = "";
+         } else {
+           flavor = flavorValue
+         }
+
+         if(textValue == "undefined") {
+           text = "";
+         } else {
+           text = textValue
+         }
+
+         if(type == "undefined") {
+         } else {
+           divAdditionalInfo.append('<label for="typeLabel">Type: </label><label id="typeLabel">'+type+'</label><br>')
+         }
+
+         if(set == "undefined") {
+         } else {
+           divAdditionalInfo.append('<label for="setLabel">Set: </label><label id="setLabel">'+set+'</label><br>')
+         }
+
+         if(cost == "undefined") {
+         } else {
+           divAdditionalInfo.append('<label for="costLabel">Cost to Craft: </label><label id="costLabel">'+cost+'</label><br>')
+         }
+
+         if(attack == "undefined") {
+         } else {
+           divAdditionalInfo.append('<label for="attackLabel">Attack: </label><label id="attackLabel">'+attack+'</label><br>')
+         }
+
+         if(health == "undefined") {
+         } else {
+           divAdditionalInfo.append('<label for="healthLabel">Health: </label><label id="healthLabel">'+health+'</label><br>')
+         }
+        
+        if(artist == "undefined") {
+         } else {
+           divAdditionalInfo.append('<label for="artistLabel">Artist: </label><label id="artistLabel">'+artist+'</label><br>')
+         }
+
+         var count = 1;
+         document.getElementById("titleCardInfo").text = name;
+         flavorValue.innerHTML = flavor;
+         $("#text").append(text);
+         imageElement = document.getElementById("imgCardInfo")
+         imageElement.setAttribute("src", image)
+         cardIDValue.innerHTML = id;
+         cardRarityValue.innerHTML = rarity;
+        }
+
+        function addCardToDeck() {
+            var count = 0;
+            var cardName = document.getElementById("titleCardInfo").text;
+            var id = document.getElementById("cardIDValue").innerHTML;
+            var rarity = document.getElementById("cardRarityValue").innerHTML;
+            var newCountCards = parseInt(document.getElementById("countCards").innerHTML)
+
+            var cardNameFixed = cardName.replace(/\s+/g, '')
+
+            if(cardNames.includes(cardName)) {
+                count = 2;
+                if(cardNamesDuplicated.includes(cardName)){
+                    alert(cardName + " has already 2 cards selected")
+                } else if (rarity=="Legendary") {
+                    alert("You can only have 1 Legendary card for "+cardName)
+                } else if(newCountCards>=30){
+                    alert("You can only select 30 cards!")
+                } else {
+                    countCards = newCountCards + 1
+                    cardNamesDuplicated.push(cardName)
+                    document.getElementById(cardNameFixed+"Count").innerHTML = count;
+                    document.getElementById(cardNameFixed).setAttribute("name", cardName+"-_-"+count+"-_-"+rarity)
+                    document.getElementById(cardNameFixed+"-_-Add").setAttribute("name", cardName+"-_-"+count+"-_-"+rarity)
+                    document.getElementById("countCards").innerHTML = countCards
+                    document.getElementById("countCards").setAttribute("name", countCards)
+                }
+            } else if(newCountCards>=30){
+                alert("You can only select 30 cards!")
+            } else {
+                count = 1;
+                countCards = newCountCards + 1
+                cardNames.push(cardName)
+                cardNameFixed = cardName.replace(/\s+/g, '')
+                var fila = "<tr><td align='center'>" + cardName + "</td><td align='center' id='" + cardNameFixed + "Count'>" + count + "</td><td align='center'><a href='#' id='"+ cardNameFixed +"' name='" + cardName + "-_-" + count + "-_-" + rarity +"' onclick='deleteCardFromDeck(this)'><span class='glyphicon glyphicon-minus'></span><a><a href='#' id='"+ cardNameFixed + "-_-Add" +"' name='" + cardName + "-_-" + count + "-_-" + rarity +"' onclick='doubleCardFromDeck(this)'><span class='glyphicon glyphicon-plus'></span><a></td><td align='center' hidden>" + id + "</td></tr>";
+                var tr = document.createElement("TR");
+                tr.innerHTML = fila;
+                tr.setAttribute("draggable", "true");
+                document.getElementById("tableDeckCards").appendChild(tr);
+                document.getElementById("countCards").innerHTML = countCards
+                document.getElementById("countCards").setAttribute("name", countCards)
+            }
+        }
+
+        function deleteCardFromDeck(card){
+            var newCountCards = parseInt(document.getElementById("countCards").innerHTML)
+            var cardNameFixed = card.id
+            var cardName = (card.name.split("-_-"))[0];
+            var count = (card.name.split("-_-"))[1];
+            var rarity = (card.name.split("-_-"))[2];
+            if(count==2) {
+                count = 1;
+                countCards = newCountCards - 1
+                document.getElementById(cardNameFixed+"Count").innerHTML = ""
+                document.getElementById(cardNameFixed+"Count").innerHTML = count
+                removeItemFromArr(cardNamesDuplicated, cardName)
+                document.getElementById(cardNameFixed).setAttribute("name", cardName+"-_-"+count+"-_-"+rarity)
+                document.getElementById(cardNameFixed+"-_-Add").setAttribute("name", cardName+"-_-"+count+"-_-"+rarity)
+                document.getElementById("countCards").innerHTML = countCards
+                document.getElementById("countCards").setAttribute("name", countCards)
+            } else {
+                countCards = newCountCards - 1
+                $("#"+cardNameFixed).parent().parent().remove()
+                removeItemFromArr(cardNames, cardName)
+                removeItemFromArr(cardNamesDuplicated, cardName)
+                document.getElementById("countCards").innerHTML = countCards
+                document.getElementById("countCards").setAttribute("name", countCards)
+            }
+            
+        }
+
+        function doubleCardFromDeck(card){
+            var cardNameFixed = (card.id.split("-_-"))[0];
+            var cardName = (card.name.split("-_-"))[0];
+            var count = (card.name.split("-_-"))[1];
+            var rarity = (card.name.split("-_-"))[2];
+            var newCountCards = parseInt(document.getElementById("countCards").innerHTML)
+            if(count==2) {
+                alert(cardName + " has already 2 cards selected!")   
+            } else if(rarity=="Legendary"){
+                alert("You can only have 1 Legendary card for "+cardName+"!")
+            } else if(newCountCards>=30){
+                alert("You can only select 30 cards!")
+            } else {
+                count = 2;
+                countCards = newCountCards + 1
+                document.getElementById(cardNameFixed+"Count").innerHTML = ""
+                document.getElementById(cardNameFixed+"Count").innerHTML = count
+                document.getElementById(cardNameFixed).setAttribute("name", cardName+"-_-"+count+"-_-"+rarity)
+                document.getElementById(cardNameFixed+"-_-Add").setAttribute("name", cardName+"-_-"+count)
+                cardNamesDuplicated.push(cardName)
+                document.getElementById("countCards").innerHTML = countCards
+                document.getElementById("countCards").setAttribute("name", countCards)
+            }
+        }
+
+        function removeItemFromArr ( arr, item ) {
+            var i = arr.indexOf( item );
+            if ( i !== -1 ) {
+                arr.splice( i, 1 );
+            }
+        }
+    </script>
+</body>

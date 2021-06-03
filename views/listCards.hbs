@@ -1,0 +1,150 @@
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css"
+    href="https://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8"
+    src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+    {{!-- <script src="./javascripts/getStudentsJS.js"></script> --}}
+    <style type="text/css">
+    body {
+      padding-right: 0 !important
+    }
+
+    .modal-open {
+      overflow: hidden;
+      padding-right: 0 !important;
+    }
+
+    tbody {
+        background: black!important;
+        color: white;
+    }
+
+    td{
+        background: #100e17;
+    }
+
+    th.dt-center, td.dt-center { text-align: center; vertical-align: middle!important;}
+
+    body {
+  background-color: #100e17;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.card {
+  display: flex;
+  height: 280px;
+  width: 200px;
+  background-color: #17141d;
+  border-radius: 10px;
+  box-shadow: -1rem 0 3rem #000;
+  transition: 0.4s ease-out;
+  position: relative;
+  left: 80px;
+}
+
+.card:not(:first-child) {
+    margin-left: -50px;
+}
+
+.card:hover {
+  transform: translateY(-20px);
+  transition: 0.4s ease-out;
+}
+
+.card:hover ~ .card {
+  position: relative;
+  left: 50px;
+  transition: 0.4s ease-out;
+}
+    </style>
+</head>
+
+<body>
+    <input type="search" id="searchText">
+    <button id="btnSearch" onclick="search()">Buscar</button>
+    <div class="container">
+        <h2 align="center">Cards</h2>
+        <ul class="list-group" id="list">
+        </ul>
+    </div>
+    <table id="card_id" class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Image</th>
+                <th>Options</th>
+            </tr>
+        </thead>
+        <tbody id="card">
+        </tbody>
+    </table>
+    <script>
+
+        $.fn.dataTable.ext.errMode = 'none';
+
+    $('#card_id').on( 'error.dt', function ( e, settings, techNote, message ) {
+    } ).DataTable();
+        
+    function search(){
+        //$("#card_id").clear().draw()
+        let searchText = document.getElementById("searchText").value
+        var settings = {
+        "async": true,
+        "crossDomain": true,
+        "url": "https://omgvamp-hearthstone-v1.p.rapidapi.com/cards/search/"+searchText,
+        "method": "GET",
+        "headers": {
+            "x-rapidapi-key": "d7c5debc8fmshb4e12dcf0d3f399p17673fjsnf5cc71954220",
+            "x-rapidapi-host": "omgvamp-hearthstone-v1.p.rapidapi.com"
+        }
+        }
+
+        $.ajax(settings).done(function (response) {
+        $('#card_id').DataTable({
+            "destroy": true,
+            "data": response.slice(0,200),
+            "columnDefs": [{ 
+                className: "dt-center", targets: "_all"
+            }],
+            "columns":[
+                {"data": "name"},
+                {"data":"type", },
+                {
+                    "data":"img",
+                    "render": function(data, type, row){
+                        let image;
+                        if (data == undefined){
+                            image = "../images/no-image.png"
+                        } else {
+                            image = data
+                        }
+                   //return '<center><img src="' +image+'" width="120" height="200" /></center>'
+                    return '<div class="card"><a href="#"><img onclick="getCardInfo(this)" src="' +image+'" name="' + data.name + '" id="' + data.dbfId + '"/></a></div>'
+                    }
+                },
+                { 
+                    "render": function(data, type, row) {
+                        let cardAddInfo = row.cardId + row.dbfId + row.cardSet + row.text + row.playerClass
+                        let cardID = row.dbfId
+                        return cardID
+                    }
+                }
+            ],
+        });
+        });
+    }
+
+    function getCardInfo(card){
+        console.log("asfa")
+        //console.log(card.id)
+        //console.log(card.name)
+    }
+    </script>
+</body>
