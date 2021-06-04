@@ -1,9 +1,25 @@
 var express = require('express');
 var router = express.Router();
 
-/* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+  if (req.session.loggedin) {
+    var userInfo = (req.session.username).split("-_-")
+    if (parseInt(userInfo[1]) == 1) {
+      res.render('listCards', {
+        hiddenEl: (process.env.HIDDEN_EL).toString(),
+        userName: userInfo[0],
+        xRapidapiKey: (process.env.X_RAPIDAPI_KEY).toString()
+      })
+    }else{
+      res.render("listCards",{
+        userName: userInfo[0],
+        xRapidapiKey: (process.env.X_RAPIDAPI_KEY).toString()
+      })
+    }
+  } else {
+    res.redirect("login");
+  }
 });
+
 
 module.exports = router;

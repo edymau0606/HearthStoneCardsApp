@@ -1,0 +1,198 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" type="text/css"
+    href="https://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+  <script type="text/javascript" charset="utf8"
+    src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
+  <style type="text/css">
+    body h2{
+      padding-right: 0 !important;
+      color:white!important;
+    }
+
+    tbody {
+        background: black!important;
+        color: white;
+    }
+
+    td{
+        background: #100e17;
+    }
+
+    .modal-open {
+      overflow: hidden;
+      padding-right: 0 !important;
+    }
+
+    .icon-edit:before {
+      color:#642578;
+    }
+
+    .icon-remove-circle:before {
+      color:#642578;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h2 align="center">Decks</h2>
+    <ul class="list-group" id="list">
+    </ul>
+  </div>
+  <table id="decksTable" class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Class</th>
+        <th>Format</th>
+        <th>Options</th>
+      </tr>
+    </thead>
+    <tbody id="decksContent">
+    </tbody>
+  </table>
+  <div class="modal fade" id="graph" tabindex="-1" role="dialog" aria-labelledby="mcModalIniciativas"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+              class="sr-only">Close</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="row-fluid">
+            <div class="panel-group" id="accordion">
+              <div class="panel panel-primary">
+                <div class="panel-heading">
+                  <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" id="title">
+                    </a>
+                  </h4>
+                </div>
+                <div id="collapseOne" class="panel-collapse collapse in">
+                  <div class="panel-body">
+                    <div class="row-fluid">
+                      <label for="chartType">Chart Type</label><br />
+                      <select name="chartType" id="chartType" rel="5" style="width: 200px;">
+                        <option value='bar'>Bar</option>
+                        <option value='line'>Line</option>
+                        <option value='pie'>Pie</option>
+                        <option value='doughnut'>Doughnut</option>
+                      </select>
+                      <br />
+                      <label for="x-axis">x-axis</label><br />
+                      <select name="x-axis" id="x-axis" rel="5" style="width: 200px;">
+                      </select>
+                      <br />
+                      <label for="y-axis">y-axis</label><br />
+                      <select name="y-axis" id="y-axis" rel="5" style="width: 200px;">
+                      </select>
+                      <br />
+                      <label for="IoCSelect" id="IoC"></label><br />
+                      <select name="IoCSelect" id="IoCSelect" rel="5" style="width: 200px;">
+                      </select>
+                      <br />
+                      <div class="text-right">
+                        <button id="button" class="btn btn-primary" onclick="generateGraph()">Generate</button>
+                      </div>
+                      <br />
+                    </div>
+                    <div class="row-fluid">
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    var xRapidapiKey = document.getElementById("xRapidapiKey").innerText
+    var userName = document.getElementById("userName").innerText
+    listDecks();
+    function listDecks() {
+      $('#decksTable').DataTable({
+        "ajax": {
+          "method": "GET",
+          "url": window.location.origin + "/getDecks/"+userName,
+        },
+        "columns": [
+          { 
+            "render": function(data, type, row) {
+                if(row.user==userName){
+                    return row.deckName
+                } else {
+                  return ""
+                }
+            }
+          },
+          { 
+            "render": function(data, type, row) {
+                if(row.user==userName){
+                    return row.cardClass
+                } else{
+                  return ""
+                }
+            }
+          },
+          { 
+            "render": function(data, type, row) {
+                if(row.user==userName){
+                    return row.cardFormat
+                } else{
+                  return ""
+                }
+            }
+          },
+          { 
+            "render": function(data, type, row) {
+                if(row.user==userName){
+                    return row.html
+                } else {
+                  return ""
+                }
+            }
+          },
+        ]
+      });
+    }
+    function deleteDeck(deck) {
+      var deckName = (deck.name.split("-_-"))[0];
+      var opcion = confirm("Are you sure you want to delete: " + deckName)
+      if (opcion == true) {
+        var settings = {
+          "async": true,
+          "crossDomain": true,
+          "url": window.location.origin + "/deck/" + deckName+"-_-"+userName,
+          "method": "DELETE",
+          "headers": {
+            "cache-control": "no-cache",
+          }
+        }
+
+        $.ajax(settings).done(function (response) {
+          console.log(response);
+          location.reload();
+        });
+      }
+    }
+    function editDeck(deck) {
+      var id = deck.id;
+      var deckName = (deck.name.split("-_-"))[0];
+      var cardFormat = (deck.name.split("-_-"))[1];
+      var cardClass = (deck.name.split("-_-"))[2];
+      location.href = window.location.origin + "/fillDeck?deckName=" + deckName + "&flag=edit" + "&id=" + id + "&cardClass=" + cardClass + "&cardFormat=" + cardFormat
+    }
+  </script>
+</body>

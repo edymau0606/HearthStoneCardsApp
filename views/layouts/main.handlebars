@@ -25,6 +25,7 @@
     .navbar-dark .navbar-nav .nav-link {
       color: #642578!important;
     }
+
   </style>
 </head>
   <body style="background-color: #996fa6">
@@ -32,6 +33,13 @@
     var logout = new AutoLogout();
     var self = this;
     $(document).ready(function () {
+      var li = document.createElement("LI")
+      var html = "";
+      html = document.getElementById("ulItem").innerText;
+      li.innerHTML = html;
+      li.setAttribute("class", "nav-item dropdown")
+      document.getElementById("ulItems").appendChild(li);
+
       var logOut = document.getElementById("logOutButton").innerText;
       if (logOut == "Hide") {
         var buttonLogOut = document.getElementById("buttonLogOut")
@@ -70,8 +78,10 @@
     }
 
   </script>
+  <h1 id="ulItem" hidden>{{hiddenEl}}</h1>
   <h1 id="logOutButton" hidden>{{logOutButton}}</h1>
   <h1 id="userName" hidden>{{userName}}</h1>
+  <h1 id="xRapidapiKey" hidden>{{xRapidapiKey}}</h1>
   <nav class="navbar navbar-expand-sm bg-success navbar-dark">
 
     <a class="navbar-brand" href="/">
@@ -84,7 +94,7 @@
           Cards
         </a>
         <div class="dropdown-menu">
-          <a class="dropdown-item" href="cards">List</a>
+          <a class="dropdown-item" href="card">List</a>
         </div>
       </li>
       <li class="nav-item dropdown" id="liDecks">
@@ -93,19 +103,8 @@
         </a>
         <div class="dropdown-menu">
           <a class="dropdown-item" href="createDeck">Create</a>
-          <a class="dropdown-item" href="decks">List</a>
+          <a class="dropdown-item" href="deck">List</a>
         </div>
-      </li>
-      <li class="nav-item dropdown" id="liUsers">
-        <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
-          Users
-        </a>
-        <div class="dropdown-menu">
-          <a class="dropdown-item" href="createUser">Create</a>
-          <a class="dropdown-item" href="users">List</a>
-        </div>
-      <li>
-      
       </li>
     </ul>
     

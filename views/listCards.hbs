@@ -9,7 +9,6 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
     <script type="text/javascript" charset="utf8"
     src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
-    {{!-- <script src="./javascripts/getStudentsJS.js"></script> --}}
     <style type="text/css">
     body {
       padding-right: 0 !important
@@ -62,16 +61,54 @@
   left: 50px;
   transition: 0.4s ease-out;
 }
+
+.panel-heading{
+    background: #642578!important;
+}
+
+.modal-body{
+    background: #996fa6!important;
+}
+
+#collapseOne {
+    background:black!important;
+    color: white!important;
+}
+
+.modal-header {
+    background: #f1f1f1!important
+}
+
+.panel-primary, .panel-body {
+    border-color:#642578!important;
+}
+
+body{
+    color:white!important;
+}
+
+#btnSearch {
+    background:#642578!important;
+}
+
     </style>
 </head>
 
 <body>
-    <input type="search" id="searchText">
-    <button id="btnSearch" onclick="search()">Buscar</button>
+    <div class="col-md-12">
+        <div class="row">
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+                <input type="search" id="searchText" class="form-control" />
+            </div>
+            <div class="">
+                <button id="btnSearch" type="button" for="searchText" class="btn btn-primary" onclick="search()">Search</button>
+            </div>
+        </div>
+    </div>
+    <br>
     <div class="container">
         <h2 align="center">Cards</h2>
-        <ul class="list-group" id="list">
-        </ul>
     </div>
     <table id="card_id" class="table table-bordered">
         <thead>
@@ -79,13 +116,59 @@
                 <th>Name</th>
                 <th>Type</th>
                 <th>Image</th>
-                <th>Options</th>
+                <th>Class</th>
             </tr>
         </thead>
         <tbody id="card">
         </tbody>
     </table>
+    <div class="modal" id="cardInfoModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+              class="sr-only">Close</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="row-fluid">
+            <div class="panel-group" id="accordion">
+              <div class="panel panel-primary">
+                <div class="panel-heading">
+                <center>
+                  <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" id="titleCardInfo">
+                    </a>
+                  </h4>
+                  </center>
+                </div>
+                <div id="collapseOne" class="panel-collapse collapse in">
+                    <center><img id="imgCardInfo" width="120" height="200"/></center>
+                  <div class="panel-body">
+                    <div class="row-fluid">
+                      <div class="container">
+                        <div class="col-md-4">
+                            <h6 id="cardIDValue" hidden></h6>
+                            <h6 id="cardRarityValue" hidden></h6>
+                          <center><h6 id="flavor"></h6></center>
+                          <center><h5 id="text"></h5></center>
+                          <div id="additionalInfo"></div>
+                        </div>
+                      </div><br /><br />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+    </div>
+  </div>
+</div>
+    </body>
     <script>
+
+        var xRapidapiKey = document.getElementById("xRapidapiKey").innerText
 
         $.fn.dataTable.ext.errMode = 'none';
 
@@ -93,7 +176,6 @@
     } ).DataTable();
         
     function search(){
-        //$("#card_id").clear().draw()
         let searchText = document.getElementById("searchText").value
         var settings = {
         "async": true,
@@ -101,7 +183,7 @@
         "url": "https://omgvamp-hearthstone-v1.p.rapidapi.com/cards/search/"+searchText,
         "method": "GET",
         "headers": {
-            "x-rapidapi-key": "d7c5debc8fmshb4e12dcf0d3f399p17673fjsnf5cc71954220",
+            "x-rapidapi-key": xRapidapiKey,
             "x-rapidapi-host": "omgvamp-hearthstone-v1.p.rapidapi.com"
         }
         }
@@ -125,26 +207,111 @@
                         } else {
                             image = data
                         }
-                   //return '<center><img src="' +image+'" width="120" height="200" /></center>'
-                    return '<div class="card"><a href="#"><img onclick="getCardInfo(this)" src="' +image+'" name="' + data.name + '" id="' + data.dbfId + '"/></a></div>'
+                        var text = "";
+                            if(row.text==undefined){
+                                text=""
+                            } else {
+                                text =  (row.text).replace(/[.*+?^${}()<>|]/g, '');
+                            }
+                    return '<div class="card"><a href="#"><img onclick="getCardInfo(this)" src="' +image+'" name="' + row.name+ "-_-" + row.rarity + "-_-" + row.flavor + "-_-" + text + "-_-" + row.type + "-_-" + row.cardSet + "-_-" + row.cost + "-_-" + row.attack + "-_-" + row.health + "-_-" + row.artist +'" id="' + row.dbfId + "-_-" + row.img + '" width="210" height="280" data-toggle="modal" data-target="#cardInfoModal"/></a></div>'
                     }
                 },
-                { 
-                    "render": function(data, type, row) {
-                        let cardAddInfo = row.cardId + row.dbfId + row.cardSet + row.text + row.playerClass
-                        let cardID = row.dbfId
-                        return cardID
-                    }
-                }
+                {"data": "playerClass"}
             ],
         });
         });
     }
 
     function getCardInfo(card){
-        console.log("asfa")
-        //console.log(card.id)
-        //console.log(card.name)
+        var divAdditionalInfo = $("#additionalInfo");  
+         cleanCardInfo();
+
+         var id = (card.id.split("-_-"))[0];
+         var img = (card.id.split("-_-"))[1];
+         var image = "";
+         if(img == "undefined") {
+           image = "../images/no-image.png"
+         } else {
+           image = img
+         }
+         var name = (card.name.split("-_-"))[0];
+         var rarity = (card.name.split("-_-"))[1];
+         var flavorValue = (card.name.split("-_-"))[2];
+         var textValue = (card.name.split("-_-"))[3];
+         var type = (card.name.split("-_-"))[4];
+         var set = (card.name.split("-_-"))[5];
+         var cost = (card.name.split("-_-"))[6];
+         var attack = (card.name.split("-_-"))[7];
+         var health = (card.name.split("-_-"))[8];
+         var artist = (card.name.split("-_-"))[9];
+
+         var flavor = "";
+         var text = "";
+
+         if(flavorValue == "undefined") {
+           flavor = "";
+         } else {
+           flavor = flavorValue
+         }
+
+         if(textValue == "undefined") {
+           text = "";
+         } else {
+           text = textValue
+         }
+
+         if(type == "undefined") {
+         } else {
+           divAdditionalInfo.append('<label id="typeLabel">Type: '+type+'</label><br>')
+         }
+
+         if(set == "undefined") {
+         } else {
+           divAdditionalInfo.append('<label id="setLabel">Set: '+set+'</label><br>')
+         }
+
+         if(cost == "undefined") {
+         } else {
+           divAdditionalInfo.append('<label id="costLabel">Cost to Craft: '+cost+'</label><br>')
+         }
+
+         if(attack == "undefined") {
+         } else {
+           divAdditionalInfo.append('<label id="attackLabel">Attack: '+attack+'</label><br>')
+         }
+
+         if(health == "undefined") {
+         } else {
+           divAdditionalInfo.append('<label id="healthLabel">Health: '+health+'</label><br>')
+         }
+        
+        if(artist == "undefined") {
+         } else {
+           divAdditionalInfo.append('<label id="artistLabel">Artist: '+artist+'</label><br>')
+         }
+
+         var count = 1;
+         document.getElementById("titleCardInfo").text = name;
+         flavorValue.innerHTML = flavor;
+         $("#text").append(text);
+         imageElement = document.getElementById("imgCardInfo")
+         imageElement.setAttribute("src", image)
+         cardIDValue.innerHTML = id;
+         cardRarityValue.innerHTML = rarity;
     }
+
+    function cleanCardInfo(){
+         var cardIDValue = document.getElementById("cardIDValue")
+         var cardRarityValue = document.getElementById("cardRarityValue")
+         var additionalInfoDiv = document.getElementById("additionalInfo")
+         var flavorValue = document.getElementById("flavor")
+         var textValue = document.getElementById("text")
+
+         additionalInfoDiv.innerHTML = "";
+         cardIDValue.innerHTML = "";
+         cardRarityValue.innerHTML = "";
+         flavorValue.innerHTML = "";
+         textValue.innerHTML = "";
+        }
     </script>
 </body>

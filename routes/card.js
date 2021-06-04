@@ -1,0 +1,26 @@
+var express = require('express');
+var router = express.Router();
+
+router.get('/', function(req, res, next) {
+  console.log((process.env.HIDDEN_EL).toString())
+  console.log((process.env.X_RAPIDAPI_KEY).toString())
+    if (req.session.loggedin) {
+      var userInfo = (req.session.username).split("-_-")
+      if (parseInt(userInfo[1]) == 1) {
+        res.render('listCards', {
+          hiddenEl: (process.env.HIDDEN_EL).toString(),
+          userName: userInfo[0],
+          xRapidapiKey: (process.env.X_RAPIDAPI_KEY).toString()
+        })
+      }else{
+        res.render("listCards",{
+          userName: userInfo[0],
+          xRapidapiKey: (process.env.X_RAPIDAPI_KEY).toString()
+        })
+      }
+    } else {
+      res.redirect("login");
+    }
+  });
+
+module.exports = router;

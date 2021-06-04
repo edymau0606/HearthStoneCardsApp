@@ -8,11 +8,18 @@ var logger = require('morgan');
 var bodyParser = require('body-parser')
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var cardsRouter = require('./routes/cards');
+var userRouter = require('./routes/user');
+var cardRouter = require('./routes/card');
 var createDeckRouter = require('./routes/createDeck');
 var fillDeckRouter = require('./routes/fillDeck');
 var createUserRouter = require('./routes/createUser');
+var getUsersRouter = require('./routes/getUsers');
+var getRolesRouter = require('./routes/getRoles');
+var deckRouter = require('./routes/deck');
+var getDecksRouter = require('./routes/getDecks');
+var deckRouter = require('./routes/deck');
+var loginRouter = require('./routes/login');
+var logoutRouter = require('./routes/logout');
 
 var app = express();
 
@@ -46,11 +53,18 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/cards', cardsRouter);
+app.use('/user', userRouter);
+app.use('/card', cardRouter);
 app.use('/createDeck', createDeckRouter);
 app.use('/fillDeck', fillDeckRouter);
 app.use('/createUser', createUserRouter);
+app.use('/getUsers', getUsersRouter);
+app.use('/getRoles', getRolesRouter);
+app.use('/deck', deckRouter);
+app.use('/getDecks', getDecksRouter);
+app.use('/deck', deckRouter);
+app.use('/login', loginRouter);
+app.use('/logout', logoutRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -1,0 +1,103 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" type="text/css"
+    href="https://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+  <script type="text/javascript" charset="utf8"
+    src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+  <style type="text/css">
+    body {
+      padding-right: 0 !important
+    }
+
+    h2{
+      color:white!important;
+    }
+
+    tbody {
+        background: black!important;
+        color: white;
+    }
+
+    td{
+        background: #100e17;
+    }
+
+    .modal-open {
+      overflow: hidden;
+      padding-right: 0 !important;
+    }
+
+    .icon-edit:before {
+      color:#642578;
+    }
+
+    .icon-remove-circle:before {
+      color:#642578;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h2 align="center">Users</h2>
+    <ul class="list-group" id="list">
+    </ul>
+  </div>
+  <table id="user_id" class="table table-bordered">
+    <thead>
+      <tr>
+        <th>User Name</th>
+        <th>Options</th>
+      </tr>
+    </thead>
+    <tbody id="user">
+    </tbody>
+  </table>
+  <script>
+    listUsers();
+    function listUsers() {
+      $('#user_id').DataTable({
+        "ajax": {
+          "method": "GET",
+          "url": window.location.origin + "/getUsers"
+        },
+        "columns": [
+          { "data": "userName" },
+          { "data": "html" }
+        ]
+      });
+    }
+    function deleteUser(user) {
+      var opcion = confirm("Are you sure you want to delete: " + user.name)
+      if (opcion == true) {
+        var settings = {
+          "async": true,
+          "crossDomain": true,
+          "url": window.location.origin + "/user/" + user.name,
+          "method": "DELETE",
+          "headers": {
+            "cache-control": "no-cache",
+          }
+        }
+
+        $.ajax(settings).done(function (response) {
+          console.log(response);
+          location.reload();
+        });
+      }
+    }
+    function editUser(user) {
+      var id = user.id;
+      var name = user.name;
+      location.href = window.location.origin + "/createUser?userName=" + name + "&flag=edit" + "&roleName=" + id
+    }
+
+  </script>
+</body>
